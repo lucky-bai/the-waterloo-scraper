@@ -1,6 +1,7 @@
 # This script looks for dates in scraped blog posts, using the datefinder package.
 
 import os
+import csv
 import datetime
 import operator
 import datefinder
@@ -22,8 +23,6 @@ def most_recent_date(dates):
   for d in dates:
     if d > datetime.datetime.now():
       continue
-    if d < datetime.datetime.now() - datetime.timedelta(days = 365):
-      continue
     
     if not best_found:
       best_found = d
@@ -35,18 +34,21 @@ def most_recent_date(dates):
 
 
 def main():
-  blogs_and_post_dates = []
-
+  csvw = csv.writer(open('parse_results.csv', 'w'))
+  csvw.writerow(['blog_id', 'latest_post_date'])
+  
   # Look at every file in ./data/ directory which contains scraped pages
   for filename in os.listdir('./data'):
     if filename.endswith('.txt'):
       blog_num = int(filename[:-4])
       latest_post_date = process_file(blog_num)
-      if latest_post_date:
-        blogs_and_post_dates.append((blog_num, latest_post_date))
 
-  blogs_and_post_dates = sorted(blogs_and_post_dates, key=operator.itemgetter(1))
-  print blogs_and_post_dates
+      if latest_post_date:
+        csvw.writerow([blog_num, latest_post_date])
+      elif os.stat('data/' + filename).st_size == 0:
+        csvw.writerow([blog_num, 'empty'])
+      else:
+        csvw.writerow([blog_num, 'no_date'])
       
 
 main()
