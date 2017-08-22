@@ -1,8 +1,51 @@
+import csv
+import operator
+import dateutil.parser
 from flask import Flask
 from flask import render_template
 
 app = Flask(__name__)
 
+PATH_TO_BLOG_METADATA = '../scraper/blogs.csv'
+PATH_TO_PARSE_RESULTS = '../scraper/parse_results.csv'
+
+BLOGS = []
+RECENT_POSTS = []
+
+
+@app.before_first_request
+def load_data():
+  """Load all the data structures into memory when Flask app starts"""
+  global RECENT_POSTS
+
+  # Read metadata
+  csvr = csv.reader(open(PATH_TO_BLOG_METADATA))
+  BLOGS.append(None)
+  for url, author, program, tags in csvr:
+    BLOGS.append((url, author, program, tags))
+
+  # Read parse results
+  csvr = csv.reader(open(PATH_TO_PARSE_RESULTS))
+  csvr.next()
+  for blog_num, ts in csvr:
+    blog_num = int(blog_num)
+    if ts not in ['empty', 'no_date']:
+      dt = dateutil.parser.parse(ts)
+      RECENT_POSTS.append((blog_num, dt))
+
+  RECENT_POSTS = sorted(RECENT_POSTS, key=operator.itemgetter(1))
+  RECENT_POSTS = list(reversed(RECENT_POSTS))
+
+
 @app.route('/')
 def index():
-  return render_template('index.html')
+  data = []
+  for blog_id, day in RECENT_POSTS:
+    blog = BLOGS[blog_id]
+    dayf = day.strftime('%B %d, %Y')
+    blog_url = blog[0]
+    author = blog[1]
+    program = blog[2]
+    data.append((dayf, blog_url, author, program))
+
+  return render_template('index.html', data=data)

@@ -19,7 +19,8 @@ p {
 
     <hr>
 
-    <p><b>August 21, 2017</b>: <a href="http://luckytoilet.wordpress.com">Bai Li</a> (advice, ai, programming, travel)</p>
-    <p><b>August 20, 2017</b>: <a href="http://github.com">Somebody Else</a> (waterloo, machine learning)</p>
+    {% for row in data %}
+    <p><b>{{row[0]}}</b>: <a href="{{row[1]}}">{{row[2]}}</a> ({{row[3]}})</p>
+    {% endfor %}
   </div>
 </body>
