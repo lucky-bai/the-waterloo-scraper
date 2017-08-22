@@ -1,19 +1,16 @@
 # This script scrapes each blog once and passes result through html2text
 
 import os
+import csv
 
-SCRAPE_CMD = "wget %s; html2text index.html > data/%d.txt; rm index.html"
+SCRAPE_CMD = "wget '%s' -O index.html; html2text index.html > data/%d.txt; rm index.html"
 
 def main():
-  blog_urls = map(lambda x:x[:-2], open('blogs.txt').readlines())
+  csvr = csv.reader(open('blogs.csv'))
 
   blog_ix = 0
-  for blog_url in blog_urls:
+  for blog_url, _, _, _ in csvr:
     blog_ix += 1
-
-    # Skip all medium blogs because medium is blocked in Malaysia
-    if 'medium.com' in blog_url:
-      continue
 
     print "SCRAPING:", blog_url
     os.system(SCRAPE_CMD % (blog_url, blog_ix))
