@@ -10,6 +10,8 @@ import datefinder
 def process_file(blog_num):
   contents = open('data/%d.txt' % blog_num).read()
   contents = contents.replace('_', ' ')
+  for year in xrange(2010, 2020):
+    contents = contents.replace(str(year), str(year) + '. ')
 
   dates_found = list(datefinder.find_dates(contents, strict=True))
   latest_post_date = most_recent_date(dates_found)

@@ -57,3 +57,7 @@ def index():
     data.append((dayf, blog_url, author, program))
 
   return render_template('index.html', data=data, last_updated=LAST_UPDATED)
+
+
+if __name__ == '__main__':
+  app.run('0.0.0.0', debug = True)
