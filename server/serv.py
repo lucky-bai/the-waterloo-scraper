@@ -1,5 +1,7 @@
 import csv
+import datetime
 import operator
+import os
 import dateutil.parser
 from flask import Flask
 from flask import render_template
@@ -11,12 +13,14 @@ PATH_TO_PARSE_RESULTS = '../scraper/parse_results.csv'
 
 BLOGS = []
 RECENT_POSTS = []
+LAST_UPDATED = None
 
 
 @app.before_first_request
 def load_data():
   """Load all the data structures into memory when Flask app starts"""
   global RECENT_POSTS
+  global LAST_UPDATED
 
   # Read metadata
   csvr = csv.reader(open(PATH_TO_BLOG_METADATA))
@@ -35,6 +39,10 @@ def load_data():
 
   RECENT_POSTS = sorted(RECENT_POSTS, key=operator.itemgetter(1))
   RECENT_POSTS = list(reversed(RECENT_POSTS))
+  
+  LAST_UPDATED = datetime.datetime.fromtimestamp(
+    os.path.getmtime(PATH_TO_PARSE_RESULTS)
+  ).strftime('%a, %e %b %Y %H:%M:%S %z')
 
 
 @app.route('/')
@@ -48,4 +56,4 @@ def index():
     program = blog[2]
     data.append((dayf, blog_url, author, program))
 
-  return render_template('index.html', data=data)
+  return render_template('index.html', data=data, last_updated=LAST_UPDATED)
