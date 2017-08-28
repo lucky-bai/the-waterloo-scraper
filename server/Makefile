@@ -1,2 +1,2 @@
 flask:
-	python serv.py
+	python serv.py 2>> app.log

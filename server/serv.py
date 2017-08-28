@@ -11,22 +11,18 @@ app = Flask(__name__)
 PATH_TO_BLOG_METADATA = '../scraper/blogs.csv'
 PATH_TO_PARSE_RESULTS = '../scraper/parse_results.csv'
 
-BLOGS = []
-RECENT_POSTS = []
-LAST_UPDATED = None
 
-
-@app.before_first_request
+# This should probably be called only on startup, but it's tricky to invalidate
+# the cache when the scraper re-runs. For now, load it on every request.
 def load_data():
-  """Load all the data structures into memory when Flask app starts"""
-  global RECENT_POSTS
-  global LAST_UPDATED
+  blogs = []
+  recent_posts = []
 
   # Read metadata
   csvr = csv.reader(open(PATH_TO_BLOG_METADATA))
-  BLOGS.append(None)
+  blogs.append(None)
   for url, author, program, tags in csvr:
-    BLOGS.append((url, author, program, tags))
+    blogs.append((url, author, program, tags))
 
   # Read parse results
   csvr = csv.reader(open(PATH_TO_PARSE_RESULTS))
@@ -35,29 +31,33 @@ def load_data():
     blog_num = int(blog_num)
     if ts not in ['empty', 'no_date']:
       dt = dateutil.parser.parse(ts)
-      RECENT_POSTS.append((blog_num, dt))
+      recent_posts.append((blog_num, dt))
 
-  RECENT_POSTS = sorted(RECENT_POSTS, key=operator.itemgetter(1))
-  RECENT_POSTS = list(reversed(RECENT_POSTS))
+  recent_posts = sorted(recent_posts, key=operator.itemgetter(1))
+  recent_posts = list(reversed(recent_posts))
   
-  LAST_UPDATED = datetime.datetime.fromtimestamp(
+  last_updated = datetime.datetime.fromtimestamp(
     os.path.getmtime(PATH_TO_PARSE_RESULTS)
   ).strftime('%a, %e %b %Y %H:%M:%S %z')
+
+  return blogs, recent_posts, last_updated
 
 
 @app.route('/')
 def index():
+  blogs, recent_posts, last_updated = load_data()
+
   data = []
-  for blog_id, day in RECENT_POSTS:
-    blog = BLOGS[blog_id]
+  for blog_id, day in recent_posts:
+    blog = blogs[blog_id]
     dayf = day.strftime('%B %d, %Y')
     blog_url = blog[0]
     author = blog[1]
     program = blog[2]
     data.append((dayf, blog_url, author, program))
 
-  return render_template('index.html', data=data, last_updated=LAST_UPDATED)
+  return render_template('index.html', data=data, last_updated=last_updated)
 
 
 if __name__ == '__main__':
-  app.run('0.0.0.0', debug = True)
+  app.run('0.0.0.0', port = 80, debug = True)
