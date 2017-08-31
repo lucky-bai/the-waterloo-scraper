@@ -1,0 +1,36 @@
+<head>
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+
+<style>
+.container {
+  max-width: 50em;
+}
+p {
+  font-size: 16px;
+}
+table {
+  width: 100%;
+}
+td {
+  border: 1px solid black;
+  padding: 5px 30px 5px 30px;
+}
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>The Waterloo Blogger: Blog Status</h1>
+    <p><i>Last updated: {{last_updated}}</i></p>
+
+    <hr>
+
+    <table>
+      {% for row in data %}
+      <tr><td><a href="{{row[0]}}">{{row[1]}}</a></td><td>{{row[2]}}</td></td>
+      {% endfor %}
+    </table>
+
+    <hr>
+  </div>
+</body>

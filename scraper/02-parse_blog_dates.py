@@ -38,6 +38,8 @@ def most_recent_date(dates):
 def main():
   csvw = csv.writer(open('parse_results.csv', 'w'))
   csvw.writerow(['blog_id', 'latest_post_date'])
+
+  results = []
   
   # Look at every file in ./data/ directory which contains scraped pages
   for filename in os.listdir('./data'):
@@ -46,11 +48,15 @@ def main():
       latest_post_date = process_file(blog_num)
 
       if latest_post_date:
-        csvw.writerow([blog_num, latest_post_date])
+        results.append((blog_num, latest_post_date))
       elif os.stat('data/' + filename).st_size == 0:
-        csvw.writerow([blog_num, 'empty'])
+        results.append((blog_num, 'empty'))
       else:
-        csvw.writerow([blog_num, 'no_date'])
+        results.append((blog_num, 'no_date'))
+
+  results = sorted(results)
+  for row in results:
+    csvw.writerow(row)
       
 
 main()
